@@ -26,7 +26,7 @@
    <string>QBeach</string>
   </property>
   <widget class="QWidget" name="dockWidgetContents">
-   <layout class="QGridLayout" name="gridLayout_17">
+   <layout class="QGridLayout" name="gridLayout_18">
     <item row="0" column="0">
      <widget class="QTabWidget" name="tabQBeach">
       <property name="currentIndex">
@@ -36,7 +36,7 @@
        <attribute name="title">
         <string>BathyBuilder</string>
        </attribute>
-       <layout class="QGridLayout" name="gridLayout_5">
+       <layout class="QGridLayout" name="gridLayout_17">
         <item row="0" column="0">
          <widget class="QScrollArea" name="saBB">
           <property name="widgetResizable">
@@ -51,9 +51,9 @@
              <height>880</height>
             </rect>
            </property>
-           <layout class="QGridLayout" name="gridLayout_3">
+           <layout class="QGridLayout" name="gridLayout_5">
             <item row="0" column="0">
-             <layout class="QVBoxLayout" name="verticalLayout_3">
+             <layout class="QVBoxLayout" name="verticalLayout_13">
               <item>
                <widget class="QTextBrowser" name="txtbBathyBuilder">
                 <property name="minimumSize">
@@ -513,20 +513,44 @@ p, li { white-space: pre-wrap; }
                </widget>
               </item>
               <item>
-               <widget class="QgsCollapsibleGroupBox" name="depGroupBox">
+               <widget class="QgsCollapsibleGroupBox" name="gbOptionalFiles">
                 <property name="title">
-                 <string>Plot to check bathy files</string>
+                 <string>Optional *.dep files</string>
                 </property>
                 <property name="collapsed">
                  <bool>true</bool>
                 </property>
-                <layout class="QGridLayout" name="gridLayout_4">
+                <layout class="QGridLayout" name="gridLayout_3">
                  <item row="0" column="0">
-                  <layout class="QVBoxLayout" name="verticalLayout_4">
+                  <layout class="QVBoxLayout" name="verticalLayout_3">
                    <item>
-                    <layout class="QHBoxLayout" name="horizontalLayout_14">
+                    <layout class="QHBoxLayout" name="horizontalLayout_13">
                      <item>
-                      <widget class="QgsFileWidget" name="xgrdQgsFileWidget">
+                      <widget class="QCheckBox" name="cbManningLayer">
+                       <property name="text">
+                        <string>Make Manning layer</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <spacer name="horizontalSpacer_43">
+                       <property name="orientation">
+                        <enum>Qt::Horizontal</enum>
+                       </property>
+                       <property name="sizeHint" stdset="0">
+                        <size>
+                         <width>40</width>
+                         <height>20</height>
+                        </size>
+                       </property>
+                      </spacer>
+                     </item>
+                    </layout>
+                   </item>
+                   <item>
+                    <layout class="QHBoxLayout" name="horizontalLayout_52">
+                     <item>
+                      <widget class="QgsMapLayerComboBox" name="mlcbManningSource">
                        <property name="minimumSize">
                         <size>
                          <width>177</width>
@@ -536,14 +560,404 @@ p, li { white-space: pre-wrap; }
                       </widget>
                      </item>
                      <item>
-                      <widget class="QLabel" name="labXgrd">
+                      <widget class="QLabel" name="lbManningVectorSource">
+                       <property name="text">
+                        <string>Vector source</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <spacer name="horizontalSpacer_51">
+                       <property name="orientation">
+                        <enum>Qt::Horizontal</enum>
+                       </property>
+                       <property name="sizeHint" stdset="0">
+                        <size>
+                         <width>40</width>
+                         <height>20</height>
+                        </size>
+                       </property>
+                      </spacer>
+                     </item>
+                    </layout>
+                   </item>
+                   <item>
+                    <layout class="QHBoxLayout" name="horizontalLayout_53">
+                     <item>
+                      <widget class="QComboBox" name="cbManningHeading">
+                       <property name="minimumSize">
+                        <size>
+                         <width>177</width>
+                         <height>0</height>
+                        </size>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="lbManningUseField">
+                       <property name="text">
+                        <string>Use field</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <spacer name="horizontalSpacer_52">
+                       <property name="orientation">
+                        <enum>Qt::Horizontal</enum>
+                       </property>
+                       <property name="sizeHint" stdset="0">
+                        <size>
+                         <width>40</width>
+                         <height>20</height>
+                        </size>
+                       </property>
+                      </spacer>
+                     </item>
+                    </layout>
+                   </item>
+                   <item>
+                    <layout class="QHBoxLayout" name="horizontalLayout_57">
+                     <item>
+                      <widget class="QDoubleSpinBox" name="dsbDefaultManning">
+                       <property name="minimumSize">
+                        <size>
+                         <width>90</width>
+                         <height>0</height>
+                        </size>
+                       </property>
+                       <property name="decimals">
+                        <number>3</number>
+                       </property>
+                       <property name="maximum">
+                        <double>0.300000000000000</double>
+                       </property>
+                       <property name="singleStep">
+                        <double>0.001000000000000</double>
+                       </property>
+                       <property name="value">
+                        <double>0.025000000000000</double>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="labDefaultManning">
+                       <property name="text">
+                        <string>Default Manning coefficient</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <spacer name="horizontalSpacer_64">
+                       <property name="orientation">
+                        <enum>Qt::Horizontal</enum>
+                       </property>
+                       <property name="sizeHint" stdset="0">
+                        <size>
+                         <width>40</width>
+                         <height>20</height>
+                        </size>
+                       </property>
+                      </spacer>
+                     </item>
+                    </layout>
+                   </item>
+                   <item>
+                    <layout class="QHBoxLayout" name="horizontalLayout_54">
+                     <item>
+                      <widget class="QCheckBox" name="cbNonErodibleLayer">
+                       <property name="text">
+                        <string>Make non-erodible layer</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <spacer name="horizontalSpacer_53">
+                       <property name="orientation">
+                        <enum>Qt::Horizontal</enum>
+                       </property>
+                       <property name="sizeHint" stdset="0">
+                        <size>
+                         <width>40</width>
+                         <height>20</height>
+                        </size>
+                       </property>
+                      </spacer>
+                     </item>
+                    </layout>
+                   </item>
+                   <item>
+                    <layout class="QHBoxLayout" name="horizontalLayout_55">
+                     <item>
+                      <widget class="QgsMapLayerComboBox" name="mlcbNonErodibleSource">
+                       <property name="minimumSize">
+                        <size>
+                         <width>177</width>
+                         <height>0</height>
+                        </size>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="lbNonErodibleVector">
+                       <property name="text">
+                        <string>Vector source</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <spacer name="horizontalSpacer_54">
+                       <property name="orientation">
+                        <enum>Qt::Horizontal</enum>
+                       </property>
+                       <property name="sizeHint" stdset="0">
+                        <size>
+                         <width>40</width>
+                         <height>20</height>
+                        </size>
+                       </property>
+                      </spacer>
+                     </item>
+                    </layout>
+                   </item>
+                   <item>
+                    <layout class="QHBoxLayout" name="horizontalLayout_56">
+                     <item>
+                      <widget class="QComboBox" name="cbNonErodibleHeading">
+                       <property name="minimumSize">
+                        <size>
+                         <width>177</width>
+                         <height>0</height>
+                        </size>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="lbNonErodibleUseField">
+                       <property name="text">
+                        <string>Use field</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <spacer name="horizontalSpacer_55">
+                       <property name="orientation">
+                        <enum>Qt::Horizontal</enum>
+                       </property>
+                       <property name="sizeHint" stdset="0">
+                        <size>
+                         <width>40</width>
+                         <height>20</height>
+                        </size>
+                       </property>
+                      </spacer>
+                     </item>
+                    </layout>
+                   </item>
+                   <item>
+                    <layout class="QHBoxLayout" name="horizontalLayout_65">
+                     <item>
+                      <widget class="QDoubleSpinBox" name="dsbDefaultNE">
+                       <property name="minimumSize">
+                        <size>
+                         <width>90</width>
+                         <height>0</height>
+                        </size>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="labDefaultErodible">
+                       <property name="text">
+                        <string>Default erodible depth</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <spacer name="horizontalSpacer_65">
+                       <property name="orientation">
+                        <enum>Qt::Horizontal</enum>
+                       </property>
+                       <property name="sizeHint" stdset="0">
+                        <size>
+                         <width>40</width>
+                         <height>20</height>
+                        </size>
+                       </property>
+                      </spacer>
+                     </item>
+                    </layout>
+                   </item>
+                   <item>
+                    <layout class="QHBoxLayout" name="horizontalLayout_66">
+                     <item>
+                      <widget class="QCheckBox" name="cbSedimentLayer">
+                       <property name="text">
+                        <string>Make sediment grain size layer</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <spacer name="horizontalSpacer_56">
+                       <property name="orientation">
+                        <enum>Qt::Horizontal</enum>
+                       </property>
+                       <property name="sizeHint" stdset="0">
+                        <size>
+                         <width>40</width>
+                         <height>20</height>
+                        </size>
+                       </property>
+                      </spacer>
+                     </item>
+                    </layout>
+                   </item>
+                   <item>
+                    <layout class="QHBoxLayout" name="horizontalLayout_58">
+                     <item>
+                      <widget class="QgsMapLayerComboBox" name="mlcbSedimentSource">
+                       <property name="minimumSize">
+                        <size>
+                         <width>177</width>
+                         <height>0</height>
+                        </size>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="lbSedimentVectorSource">
+                       <property name="text">
+                        <string>Vector source</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <spacer name="horizontalSpacer_57">
+                       <property name="orientation">
+                        <enum>Qt::Horizontal</enum>
+                       </property>
+                       <property name="sizeHint" stdset="0">
+                        <size>
+                         <width>40</width>
+                         <height>20</height>
+                        </size>
+                       </property>
+                      </spacer>
+                     </item>
+                    </layout>
+                   </item>
+                   <item>
+                    <layout class="QHBoxLayout" name="horizontalLayout_59">
+                     <item>
+                      <widget class="QComboBox" name="cbSedimentHeading">
+                       <property name="minimumSize">
+                        <size>
+                         <width>177</width>
+                         <height>0</height>
+                        </size>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="lbSeidmentUseField">
+                       <property name="text">
+                        <string>Use field</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <spacer name="horizontalSpacer_58">
+                       <property name="orientation">
+                        <enum>Qt::Horizontal</enum>
+                       </property>
+                       <property name="sizeHint" stdset="0">
+                        <size>
+                         <width>40</width>
+                         <height>20</height>
+                        </size>
+                       </property>
+                      </spacer>
+                     </item>
+                    </layout>
+                   </item>
+                   <item>
+                    <layout class="QHBoxLayout" name="horizontalLayout_67">
+                     <item>
+                      <widget class="QDoubleSpinBox" name="dsbDefaultGrainSize">
+                       <property name="minimumSize">
+                        <size>
+                         <width>90</width>
+                         <height>0</height>
+                        </size>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="labDefaultGrainSize">
+                       <property name="text">
+                        <string>Default D50</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <spacer name="horizontalSpacer_66">
+                       <property name="orientation">
+                        <enum>Qt::Horizontal</enum>
+                       </property>
+                       <property name="sizeHint" stdset="0">
+                        <size>
+                         <width>40</width>
+                         <height>20</height>
+                        </size>
+                       </property>
+                      </spacer>
+                     </item>
+                    </layout>
+                   </item>
+                   <item>
+                    <layout class="QHBoxLayout" name="horizontalLayout_60">
+                     <item>
+                      <widget class="QLabel" name="labSelectGridOptional">
+                       <property name="text">
+                        <string>Match shape to grid files:</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <spacer name="horizontalSpacer_59">
+                       <property name="orientation">
+                        <enum>Qt::Horizontal</enum>
+                       </property>
+                       <property name="sizeHint" stdset="0">
+                        <size>
+                         <width>40</width>
+                         <height>20</height>
+                        </size>
+                       </property>
+                      </spacer>
+                     </item>
+                    </layout>
+                   </item>
+                   <item>
+                    <layout class="QHBoxLayout" name="horizontalLayout_61">
+                     <item>
+                      <widget class="QgsFileWidget" name="qgsfwXgridBB">
+                       <property name="minimumSize">
+                        <size>
+                         <width>177</width>
+                         <height>0</height>
+                        </size>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="labXgrdOptional">
                        <property name="text">
                         <string>Select x.grd</string>
                        </property>
                       </widget>
                      </item>
                      <item>
-                      <spacer name="horizontalSpacer_16">
+                      <spacer name="horizontalSpacer_60">
                        <property name="orientation">
                         <enum>Qt::Horizontal</enum>
                        </property>
@@ -558,9 +972,9 @@ p, li { white-space: pre-wrap; }
                     </layout>
                    </item>
                    <item>
-                    <layout class="QHBoxLayout" name="horizontalLayout_15">
+                    <layout class="QHBoxLayout" name="horizontalLayout_62">
                      <item>
-                      <widget class="QgsFileWidget" name="ygrdQgsFileWidget">
+                      <widget class="QgsFileWidget" name="qgsfwYgridBB">
                        <property name="minimumSize">
                         <size>
                          <width>177</width>
@@ -570,14 +984,14 @@ p, li { white-space: pre-wrap; }
                       </widget>
                      </item>
                      <item>
-                      <widget class="QLabel" name="labYgrd">
+                      <widget class="QLabel" name="labYgrdOptional">
                        <property name="text">
                         <string>Select y.grd</string>
                        </property>
                       </widget>
                      </item>
                      <item>
-                      <spacer name="horizontalSpacer_15">
+                      <spacer name="horizontalSpacer_61">
                        <property name="orientation">
                         <enum>Qt::Horizontal</enum>
                        </property>
@@ -592,9 +1006,9 @@ p, li { white-space: pre-wrap; }
                     </layout>
                    </item>
                    <item>
-                    <layout class="QHBoxLayout" name="horizontalLayout_16">
+                    <layout class="QHBoxLayout" name="horizontalLayout_63">
                      <item>
-                      <widget class="QgsFileWidget" name="beddepQgsFileWidget">
+                      <widget class="QgsFileWidget" name="qgsfwBedDepBB">
                        <property name="minimumSize">
                         <size>
                          <width>177</width>
@@ -604,14 +1018,14 @@ p, li { white-space: pre-wrap; }
                       </widget>
                      </item>
                      <item>
-                      <widget class="QLabel" name="labBedDep">
+                      <widget class="QLabel" name="labDepOptional">
                        <property name="text">
-                        <string>Select bed.dep</string>
+                        <string>Select *.dep</string>
                        </property>
                       </widget>
                      </item>
                      <item>
-                      <spacer name="horizontalSpacer_10">
+                      <spacer name="horizontalSpacer_62">
                        <property name="orientation">
                         <enum>Qt::Horizontal</enum>
                        </property>
@@ -626,9 +1040,36 @@ p, li { white-space: pre-wrap; }
                     </layout>
                    </item>
                    <item>
-                    <layout class="QHBoxLayout" name="horizontalLayout_17">
+                    <layout class="QHBoxLayout" name="horizontalLayout_64">
                      <item>
-                      <spacer name="horizontalSpacer_2">
+                      <widget class="QLabel" name="labOutputPathOptional">
+                       <property name="text">
+                        <string>Select output path:</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <spacer name="horizontalSpacer_63">
+                       <property name="orientation">
+                        <enum>Qt::Horizontal</enum>
+                       </property>
+                       <property name="sizeHint" stdset="0">
+                        <size>
+                         <width>40</width>
+                         <height>20</height>
+                        </size>
+                       </property>
+                      </spacer>
+                     </item>
+                    </layout>
+                   </item>
+                   <item>
+                    <widget class="QgsFileWidget" name="fwSetwdBB2"/>
+                   </item>
+                   <item>
+                    <layout class="QHBoxLayout" name="horizontalLayout_68">
+                     <item>
+                      <spacer name="horizontalSpacer_67">
                        <property name="orientation">
                         <enum>Qt::Horizontal</enum>
                        </property>
@@ -641,9 +1082,9 @@ p, li { white-space: pre-wrap; }
                       </spacer>
                      </item>
                      <item>
-                      <widget class="QPushButton" name="pbDrawGrdDep">
+                      <widget class="QPushButton" name="pbExportOptionalFiles">
                        <property name="text">
-                        <string>Plot</string>
+                        <string>Export</string>
                        </property>
                       </widget>
                      </item>
@@ -655,15 +1096,11 @@ p, li { white-space: pre-wrap; }
                </widget>
               </item>
               <item>
-               <layout class="QHBoxLayout" name="horizontalLayout_13">
-                <item>
-                 <widget class="QPushButton" name="pbCancelBathy">
-                  <property name="text">
-                   <string>Cancel</string>
-                  </property>
-                 </widget>
-                </item>
-               </layout>
+               <widget class="QPushButton" name="pbCancelBathy">
+                <property name="text">
+                 <string>Cancel</string>
+                </property>
+               </widget>
               </item>
               <item>
                <spacer name="verticalSpacer">
@@ -672,8 +1109,8 @@ p, li { white-space: pre-wrap; }
                 </property>
                 <property name="sizeHint" stdset="0">
                  <size>
-                  <width>308</width>
-                  <height>41</height>
+                  <width>288</width>
+                  <height>40</height>
                  </size>
                 </property>
                </spacer>
@@ -701,8 +1138,8 @@ p, li { white-space: pre-wrap; }
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>358</width>
-             <height>880</height>
+             <width>374</width>
+             <height>1026</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_15">
@@ -1046,7 +1483,7 @@ p, li { white-space: pre-wrap; }
                  <string>Output variables</string>
                 </property>
                 <property name="collapsed">
-                 <bool>true</bool>
+                 <bool>false</bool>
                 </property>
                 <layout class="QGridLayout" name="gridLayout_12">
                  <item row="0" column="0">
@@ -1086,7 +1523,7 @@ p, li { white-space: pre-wrap; }
                         <item>
                          <widget class="QCheckBox" name="cbCelerity">
                           <property name="text">
-                           <string>C - Wave celerity</string>
+                           <string>c - Wave celerity</string>
                           </property>
                          </widget>
                         </item>
@@ -1318,7 +1755,7 @@ p, li { white-space: pre-wrap; }
                         <item>
                          <widget class="QCheckBox" name="cbCelerityMean">
                           <property name="text">
-                           <string>C - Mean wave celerity</string>
+                           <string>c - Mean wave celerity</string>
                           </property>
                          </widget>
                         </item>
@@ -1753,10 +2190,16 @@ p, li { white-space: pre-wrap; }
              <layout class="QVBoxLayout" name="verticalLayout_10">
               <item>
                <widget class="QTextBrowser" name="txtbResultsWrangler">
+                <property name="minimumSize">
+                 <size>
+                  <width>0</width>
+                  <height>105</height>
+                 </size>
+                </property>
                 <property name="maximumSize">
                  <size>
                   <width>16777215</width>
-                  <height>75</height>
+                  <height>105</height>
                  </size>
                 </property>
                 <property name="verticalScrollBarPolicy">
@@ -1771,14 +2214,160 @@ p, li { white-space: pre-wrap; }
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Ubuntu Sans'; font-size:11pt; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Explore &lt;/span&gt;&lt;span style=&quot; font-weight:600; font-style:italic;&quot;&gt;XBeach&lt;/span&gt;&lt;span style=&quot; font-weight:600;&quot;&gt; model results.&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Open an &lt;span style=&quot; font-style:italic;&quot;&gt;xboutput.nc &lt;/span&gt;file and plot variables at various time steps.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Plot to check bed.dep, manning.dep, nonerodible.dep, or sediment.dep files. &lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Alternatively, open an &lt;span style=&quot; font-style:italic;&quot;&gt;xboutput.nc &lt;/span&gt;file and plot variables at various time steps.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                 </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QgsCollapsibleGroupBox" name="depGroupBox">
+                <property name="title">
+                 <string>View *.dep file</string>
+                </property>
+                <property name="collapsed">
+                 <bool>true</bool>
+                </property>
+                <layout class="QGridLayout" name="gridLayout_4">
+                 <item row="0" column="0">
+                  <layout class="QVBoxLayout" name="verticalLayout_4">
+                   <item>
+                    <layout class="QHBoxLayout" name="horizontalLayout_14">
+                     <item>
+                      <widget class="QgsFileWidget" name="xgrdQgsFileWidget">
+                       <property name="minimumSize">
+                        <size>
+                         <width>177</width>
+                         <height>0</height>
+                        </size>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="labXgrd">
+                       <property name="text">
+                        <string>Select x.grd</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <spacer name="horizontalSpacer_16">
+                       <property name="orientation">
+                        <enum>Qt::Horizontal</enum>
+                       </property>
+                       <property name="sizeHint" stdset="0">
+                        <size>
+                         <width>40</width>
+                         <height>20</height>
+                        </size>
+                       </property>
+                      </spacer>
+                     </item>
+                    </layout>
+                   </item>
+                   <item>
+                    <layout class="QHBoxLayout" name="horizontalLayout_15">
+                     <item>
+                      <widget class="QgsFileWidget" name="ygrdQgsFileWidget">
+                       <property name="minimumSize">
+                        <size>
+                         <width>177</width>
+                         <height>0</height>
+                        </size>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="labYgrd">
+                       <property name="text">
+                        <string>Select y.grd</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <spacer name="horizontalSpacer_15">
+                       <property name="orientation">
+                        <enum>Qt::Horizontal</enum>
+                       </property>
+                       <property name="sizeHint" stdset="0">
+                        <size>
+                         <width>40</width>
+                         <height>20</height>
+                        </size>
+                       </property>
+                      </spacer>
+                     </item>
+                    </layout>
+                   </item>
+                   <item>
+                    <layout class="QHBoxLayout" name="horizontalLayout_16">
+                     <item>
+                      <widget class="QgsFileWidget" name="beddepQgsFileWidget">
+                       <property name="minimumSize">
+                        <size>
+                         <width>177</width>
+                         <height>0</height>
+                        </size>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="labBedDep">
+                       <property name="text">
+                        <string>Select *.dep</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <spacer name="horizontalSpacer_10">
+                       <property name="orientation">
+                        <enum>Qt::Horizontal</enum>
+                       </property>
+                       <property name="sizeHint" stdset="0">
+                        <size>
+                         <width>40</width>
+                         <height>20</height>
+                        </size>
+                       </property>
+                      </spacer>
+                     </item>
+                    </layout>
+                   </item>
+                   <item>
+                    <layout class="QHBoxLayout" name="horizontalLayout_17">
+                     <item>
+                      <spacer name="horizontalSpacer_2">
+                       <property name="orientation">
+                        <enum>Qt::Horizontal</enum>
+                       </property>
+                       <property name="sizeHint" stdset="0">
+                        <size>
+                         <width>40</width>
+                         <height>20</height>
+                        </size>
+                       </property>
+                      </spacer>
+                     </item>
+                     <item>
+                      <widget class="QPushButton" name="pbDrawGrdDep">
+                       <property name="text">
+                        <string>Plot</string>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </item>
+                  </layout>
+                 </item>
+                </layout>
                </widget>
               </item>
               <item>
                <widget class="QgsCollapsibleGroupBox" name="resultsGroupBox">
                 <property name="title">
-                 <string>Model output</string>
+                 <string>Inspect model output</string>
+                </property>
+                <property name="collapsed">
+                 <bool>true</bool>
                 </property>
                 <layout class="QGridLayout" name="gridLayout_11">
                  <item row="0" column="0">

@@ -43,18 +43,32 @@ class QBeachDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.iface = iface
         self.setupUi(self)
 
-        self.fwSetwd.setStorageMode(QgsFileWidget.GetDirectory)
-        self.fwSetwd2.setStorageMode(QgsFileWidget.GetDirectory)
-        self.mlcbBathySource.setFilters(QgsMapLayerProxyModel.RasterLayer)
+        # enable external links in the info text browsers
+        self.txtbModelMaker.setOpenExternalLinks(True)
+        self.txtbBathyBuilder.setOpenExternalLinks(True)
 
-        # restrict file widgets to specific file types
+        # restrict layer selectors to raster or vector
+        self.mlcbBathySource.setFilters(QgsMapLayerProxyModel.RasterLayer)
+        self.mlcbManningSource.setFilters(QgsMapLayerProxyModel.VectorLayer)
+        self.mlcbNonErodibleSource.setFilters(QgsMapLayerProxyModel.VectorLayer)
+        self.mlcbSedimentSource.setFilters(QgsMapLayerProxyModel.VectorLayer)
+
+        # restrict file widgets by file types
         self.xgrdQgsFileWidget.setFilter("*.grd")
         self.ygrdQgsFileWidget.setFilter("*.grd")
         self.beddepQgsFileWidget.setFilter("*.dep")
         self.xgrdQgsFileWidget2.setFilter("*.grd")
         self.ygrdQgsFileWidget2.setFilter("*.grd")
         self.beddepQgsFileWidget2.setFilter("*.dep")
+        self.qgsfwXgridBB.setFilter("*.grd")
+        self.qgsfwYgridBB.setFilter("*.grd")
+        self.qgsfwBedDepBB.setFilter("*.dep")
         self.xboutputFileWidget.setFilter("*.nc")
+
+        # restrict directory selectors to directories
+        self.fwSetwd.setStorageMode(QgsFileWidget.GetDirectory)
+        self.fwSetwd2.setStorageMode(QgsFileWidget.GetDirectory)
+        self.fwSetwdBB2.setStorageMode(QgsFileWidget.GetDirectory)
 
         # connect button clicks
         self.pbCancelBathy.clicked.connect(self.close)
@@ -63,17 +77,26 @@ class QBeachDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.pbDrawOrigin.clicked.connect(self.drawGrid)
         self.pbResetGrid.clicked.connect(self.resetGrid)
         self.pbResetParams.clicked.connect(self.resetInputParams)
-        self.pushButton.clicked.connect(self.exportFiles)
+        self.pushButton.clicked.connect(self.exportBathy)
         self.pbDrawGrdDep.clicked.connect(self.plotGrdDep)
         self.pbExportModel.clicked.connect(self.exportModel)
         self.pbPlotVariable.clicked.connect(self.onPlotVariable)
         self.xboutputFileWidget.fileChanged.connect(self.onNetcdfFileChanged)
         self.cmboxVariable.currentIndexChanged.connect(self.onVariableChanged)
         self.sliderTimeStep.valueChanged.connect(self.onSliderChanged)
-        
-        # enable external links in the info text browsers
-        self.txtbModelMaker.setOpenExternalLinks(True)
-        self.txtbBathyBuilder.setOpenExternalLinks(True)
+        self.mlcbManningSource.layerChanged.connect(self.onManningLayerChanged)
+        self.cbManningLayer.toggled.connect(self.onManningLayerToggled)
+        self.cbNonErodibleLayer.toggled.connect(self.onNonErodibleLayerToggled)
+        self.cbSedimentLayer.toggled.connect(self.onSedimentLayerToggled)
+
+        # initialize optional layer enabled states
+        self.onManningLayerToggled(self.cbManningLayer.isChecked())
+        self.onNonErodibleLayerToggled(self.cbNonErodibleLayer.isChecked())
+        self.onSedimentLayerToggled(self.cbSedimentLayer.isChecked())
+
+        # reset optional layer defaults
+        self.dsbDefaultManning.setValue(DEFAULT_SETTINGS['manning'])
+        self.dsbDefaultNE.setValue(DEFAULT_SETTINGS['erodible_depth'])
         
         self.visualizer = GridVisualizer(iface)
         self.var_map = {}
@@ -89,12 +112,30 @@ class QBeachDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         # collapse all collapsible group boxes and reset tab
         self.gridGroupBox.setCollapsed(True)
         self.bathyGroupBox.setCollapsed(True)
+        self.gbOptionalFiles.setCollapsed(True)
         self.depGroupBox.setCollapsed(True)
         self.gbInputParameters.setCollapsed(True)
         self.gbOutputVariables.setCollapsed(True)
         self.gbUseGrdDep.setCollapsed(True)
         self.gbOutputModel.setCollapsed(True)
+        self.resultsGroupBox.setCollapsed(True)
         self.tabQBeach.setCurrentIndex(0)
+
+        # uncheck optional checkboxes
+        self.cbManningLayer.setChecked(False)
+        self.cbNonErodibleLayer.setChecked(False)
+        self.cbSedimentLayer.setChecked(False)
+
+        # reset optional layer defaults
+        self.dsbDefaultManning.setValue(DEFAULT_SETTINGS['manning'])
+        self.dsbDefaultNE.setValue(DEFAULT_SETTINGS['erodible_depth'])
+
+        # clear layer combo boxes
+        self.mlcbBathySource.setLayer(None)
+        self.mlcbManningSource.setLayer(None)
+        self.mlcbNonErodibleSource.setLayer(None)
+        self.mlcbSedimentSource.setLayer(None)
+        self.cbManningHeading.clear()
 
         # clear file widgets
         self.fwSetwd.setFilePath("")
@@ -105,9 +146,21 @@ class QBeachDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.xgrdQgsFileWidget2.setFilePath("")
         self.ygrdQgsFileWidget2.setFilePath("")
         self.beddepQgsFileWidget2.setFilePath("")
+        
+        # clear optional file widgets
+        self.qgsfwXgridBB.setFilePath("")
+        self.qgsfwYgridBB.setFilePath("")
+        self.qgsfwBedDepBB.setFilePath("")
+        self.fwSetwdBB2.setFilePath("")
 
         self.closingPlugin.emit()
         event.accept()
+
+
+################################################################
+##################### BATHY BUILDER ############################
+################################################################
+
 
     def resetGrid(self):
         canvas = self.iface.mapCanvas()
@@ -121,37 +174,6 @@ class QBeachDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.dsbRotation.setValue(DEFAULT_SETTINGS['rotation'])
         self.visualizer.clear()
 
-    def resetInputParams(self):
-        self.sbModelDuration.setValue(DEFAULT_SETTINGS['duration'])
-        self.dsbTide.setValue(DEFAULT_SETTINGS['tide'])
-        self.dsbWaveHeight.setValue(DEFAULT_SETTINGS['Hm0'])
-        self.dsbWavePeriod.setValue(DEFAULT_SETTINGS['Tp'])
-        self.dsbWaveDirection.setValue(DEFAULT_SETTINGS['mainAngle'])
-        self.dsbSpreading.setValue(DEFAULT_SETTINGS['spread'])
-        self.dsbGammaJSP.setValue(DEFAULT_SETTINGS['gammajsp'])
-        
-        # Reset output variable checkboxes
-        self.cbCelerity.setChecked(False)
-        self.cbEnergy.setChecked(False)
-        self.cbWaveHeight.setChecked(False)
-        self.cbSedero.setChecked(False)
-        self.cbMeanWaveAngle.setChecked(False)
-        self.cbBedLevel.setChecked(False)
-        self.cbWaterLevel.setChecked(False)
-        
-        # Reset mean variable checkboxes
-        self.cbCelerityMean.setChecked(False)
-        self.cbEnergyMean.setChecked(False)
-        self.cbWaveHeightMean.setChecked(False)
-        self.cbSederoMean.setChecked(False)
-        self.cbMeanU.setChecked(False)
-        self.cbMeanV.setChecked(False)
-        self.cbWaterLevelMean.setChecked(False)
-        
-        # Clear output variable line edits
-        self.leOutputVariables.clear()
-        self.leOtherMeans.clear()
-        
     def getGridParams(self):
         return {
             'originEasting': self.dsbEasting.value(),
@@ -162,7 +184,120 @@ class QBeachDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             'dy': self.dsbYresolution.value(),
             'angle': self.dsbRotation.value()
         }
-    
+
+    def drawGrid(self):
+        p = self.getGridParams()
+        worldROI, E_world, N_world = calculate_grid(p)
+        self.visualizer.draw(worldROI, E_world, N_world, 
+                             DEFAULT_SETTINGS['skip_x'], 
+                             DEFAULT_SETTINGS['skip_y'])
+
+    def exportBathy(self):
+
+        bathy_layer = self.mlcbBathySource.currentLayer()
+        output_dir = self.fwSetwd.filePath()
+        
+        if not bathy_layer or not isinstance(bathy_layer, QgsRasterLayer):
+            QtWidgets.QMessageBox.warning(self, "Invalid Source", "Please select a valid elevation (depth) raster layer.")
+            return
+        if not self.visualizer.roi_rubberband:
+            QtWidgets.QMessageBox.warning(self, "No Grid", "Please draw a grid before interpolating/exporting.")
+            return
+        if not output_dir or not os.path.isdir(output_dir):
+            QtWidgets.QMessageBox.warning(self, "Invalid Path", "Please select a valid output directory.")
+            return
+
+        self.iface.messageBar().pushMessage("QBeach", "Extracting bathymetry...", level=Qgis.Info, duration=2)
+
+        # get XB grid
+        p = self.getGridParams()
+        worldROI, E_world, N_world = calculate_grid(p)
+        
+        # Sample raster at grid nodes
+        Z_world = sample_raster_at_grid(bathy_layer, E_world, N_world)
+
+        try:
+            np.savetxt(os.path.join(output_dir, "x.grd"), E_world, fmt="%.4f")
+            np.savetxt(os.path.join(output_dir, "y.grd"), N_world, fmt="%.4f")
+            np.savetxt(os.path.join(output_dir, "bed.dep"), Z_world, fmt="%.4f")
+            
+            QTimer.singleShot(2500, lambda: QtWidgets.QMessageBox.information(
+                self, "Success", f".grd and .dep files saved to {output_dir}"))
+        except Exception as e:
+            QtWidgets.QMessageBox.critical(self, "Error", f"Failed to save files: {str(e)}")
+
+    def onManningLayerChanged(self, layer):
+        self.cbManningHeading.clear()
+        if layer and layer.isValid():
+            fields = [field.name() for field in layer.fields()]
+            self.cbManningHeading.addItems(fields)
+
+    def onManningLayerToggled(self, checked):
+        self.mlcbManningSource.setEnabled(checked)
+        self.cbManningHeading.setEnabled(checked)
+        self.dsbDefaultManning.setEnabled(checked)
+        self.updateOptionalExportState()
+
+    def onNonErodibleLayerToggled(self, checked):
+        self.mlcbNonErodibleSource.setEnabled(checked)
+        self.cbNonErodibleHeading.setEnabled(checked)
+        self.dsbDefaultNE.setEnabled(checked)
+        self.updateOptionalExportState()
+
+    def onSedimentLayerToggled(self, checked):
+        self.mlcbSedimentSource.setEnabled(checked)
+        self.cbSedimentHeading.setEnabled(checked)
+        self.dsbDefaultGrainSize.setEnabled(checked)
+        self.updateOptionalExportState()
+
+    def updateOptionalExportState(self):
+        any_checked = (self.cbManningLayer.isChecked() or 
+                       self.cbNonErodibleLayer.isChecked() or 
+                       self.cbSedimentLayer.isChecked())
+        
+        self.qgsfwXgridBB.setEnabled(any_checked)
+        self.qgsfwYgridBB.setEnabled(any_checked)
+        self.qgsfwBedDepBB.setEnabled(any_checked)
+        self.fwSetwdBB2.setEnabled(any_checked)
+        self.pbExportOptionalFiles.setEnabled(any_checked)
+
+
+################################################################
+##################### MODEL MAKER ##############################
+################################################################
+
+
+    def resetInputParams(self):
+        self.sbModelDuration.setValue(DEFAULT_SETTINGS['duration'])
+        self.dsbTide.setValue(DEFAULT_SETTINGS['tide'])
+        self.dsbWaveHeight.setValue(DEFAULT_SETTINGS['Hm0'])
+        self.dsbWavePeriod.setValue(DEFAULT_SETTINGS['Tp'])
+        self.dsbWaveDirection.setValue(DEFAULT_SETTINGS['mainAngle'])
+        self.dsbSpreading.setValue(DEFAULT_SETTINGS['spread'])
+        self.dsbGammaJSP.setValue(DEFAULT_SETTINGS['gammajsp'])
+        
+        # reset output variable checkboxes
+        self.cbCelerity.setChecked(False)
+        self.cbEnergy.setChecked(False)
+        self.cbWaveHeight.setChecked(False)
+        self.cbSedero.setChecked(False)
+        self.cbMeanWaveAngle.setChecked(False)
+        self.cbBedLevel.setChecked(False)
+        self.cbWaterLevel.setChecked(False)
+        
+        # reset mean variable checkboxes
+        self.cbCelerityMean.setChecked(False)
+        self.cbEnergyMean.setChecked(False)
+        self.cbWaveHeightMean.setChecked(False)
+        self.cbSederoMean.setChecked(False)
+        self.cbMeanU.setChecked(False)
+        self.cbMeanV.setChecked(False)
+        self.cbWaterLevelMean.setChecked(False)
+        
+        # clear output variable line edits
+        self.leOutputVariables.clear()
+        self.leOtherMeans.clear()
+
     def getModelParams(self):
 
         nx = 0
@@ -278,46 +413,44 @@ class QBeachDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             'mean_vars': "\n".join(selected_means)
         }
 
-    def drawGrid(self):
-        p = self.getGridParams()
-        worldROI, E_world, N_world = calculate_grid(p)
-        self.visualizer.draw(worldROI, E_world, N_world, 
-                             DEFAULT_SETTINGS['skip_x'], 
-                             DEFAULT_SETTINGS['skip_y'])
+    def exportModel(self):
 
-    def exportFiles(self):
+        output_dir = self.fwSetwd2.filePath()
+        plugin_dir = os.path.dirname(__file__)
+        params_template = os.path.join(plugin_dir, 'ParamsTemplate.txt')
+        p2 = self.getModelParams()
 
-        bathy_layer = self.mlcbBathySource.currentLayer()
-        output_dir = self.fwSetwd.filePath()
-        
-        if not bathy_layer or not isinstance(bathy_layer, QgsRasterLayer):
-            QtWidgets.QMessageBox.warning(self, "Invalid Source", "Please select a valid elevation (depth) raster layer.")
-            return
-        if not self.visualizer.roi_rubberband:
-            QtWidgets.QMessageBox.warning(self, "No Grid", "Please draw a grid before interpolating/exporting.")
-            return
-        if not output_dir or not os.path.isdir(output_dir):
-            QtWidgets.QMessageBox.warning(self, "Invalid Path", "Please select a valid output directory.")
+        if (p2['nglobalvar'] + p2['nmeanvar']) == 0:
+            QtWidgets.QMessageBox.warning(self, "No Output Variables", "Please select at least one output variable (Global or Mean) before exporting.")
             return
 
-        self.iface.messageBar().pushMessage("QBeach", "Extracting bathymetry...", level=Qgis.Info, duration=2)
-
-        # get XB grid
-        p = self.getGridParams()
-        worldROI, E_world, N_world = calculate_grid(p)
-        
-        # Sample raster at grid nodes
-        Z_world = sample_raster_at_grid(bathy_layer, E_world, N_world)
-
-        try:
-            np.savetxt(os.path.join(output_dir, "x.grd"), E_world, fmt="%.4f")
-            np.savetxt(os.path.join(output_dir, "y.grd"), N_world, fmt="%.4f")
-            np.savetxt(os.path.join(output_dir, "bed.dep"), Z_world, fmt="%.4f")
+        if not all([self.xgrdQgsFileWidget2.filePath(), self.ygrdQgsFileWidget2.filePath(), self.beddepQgsFileWidget2.filePath()]):
+            QtWidgets.QMessageBox.warning(self, "Missing Files", "Please select x.grd, y.grd, and bed.dep files.")
+            return
             
+        if not output_dir or not os.path.isdir(output_dir):
+            QtWidgets.QMessageBox.warning(self, "Invalid Directory", "Please select a valid output directory.")
+            return
+        
+        try:
+            export_xbeach_model(output_dir, params_template, p2)
+
+            self.iface.messageBar().pushMessage(
+                "Working on it:", 
+                "Preparing model files.", 
+                level=Qgis.Success, 
+                duration=2
+            )
             QTimer.singleShot(2500, lambda: QtWidgets.QMessageBox.information(
-                self, "Success", f".grd and .dep files saved to {output_dir}"))
+                self, "Success", f"Model files exported to {output_dir}"))
         except Exception as e:
-            QtWidgets.QMessageBox.critical(self, "Error", f"Failed to save files: {str(e)}")
+            QtWidgets.QMessageBox.critical(self, "Error", f"Failed to export model: {str(e)}")
+
+
+################################################################
+##################### RESULTS WRANGLER #########################
+################################################################
+
 
     def plotGrdDep(self):
         
@@ -363,39 +496,6 @@ class QBeachDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             
         except Exception as e:
             QtWidgets.QMessageBox.critical(self, "Error", f"Failed to create raster: {str(e)}")
-
-    def exportModel(self):
-
-        output_dir = self.fwSetwd2.filePath()
-        plugin_dir = os.path.dirname(__file__)
-        params_template = os.path.join(plugin_dir, 'ParamsTemplate.txt')
-        p2 = self.getModelParams()
-
-        if (p2['nglobalvar'] + p2['nmeanvar']) == 0:
-            QtWidgets.QMessageBox.warning(self, "No Output Variables", "Please select at least one output variable (Global or Mean) before exporting.")
-            return
-
-        if not all([self.xgrdQgsFileWidget2.filePath(), self.ygrdQgsFileWidget2.filePath(), self.beddepQgsFileWidget2.filePath()]):
-            QtWidgets.QMessageBox.warning(self, "Missing Files", "Please select x.grd, y.grd, and bed.dep files.")
-            return
-            
-        if not output_dir or not os.path.isdir(output_dir):
-            QtWidgets.QMessageBox.warning(self, "Invalid Directory", "Please select a valid output directory.")
-            return
-        
-        try:
-            export_xbeach_model(output_dir, params_template, p2)
-
-            self.iface.messageBar().pushMessage(
-                "Working on it:", 
-                "Preparing model files.", 
-                level=Qgis.Success, 
-                duration=2
-            )
-            QTimer.singleShot(2500, lambda: QtWidgets.QMessageBox.information(
-                self, "Success", f"Model files exported to {output_dir}"))
-        except Exception as e:
-            QtWidgets.QMessageBox.critical(self, "Error", f"Failed to export model: {str(e)}")
 
     def onNetcdfFileChanged(self, file_path):
         if not file_path or not os.path.isfile(file_path):

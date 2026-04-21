@@ -5,6 +5,8 @@ DEFAULT_SETTINGS = {
     'resx': 25.0,
     'resy': 25.0,
     'rotation': 0,
+    'manning': 0.025,
+    'erodible_depth': 0,
     'skip_x': 1,
     'skip_y': 1,
     'duration': 600,

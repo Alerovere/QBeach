@@ -2,7 +2,8 @@
 import os
 import tempfile
 import numpy as np
-from qgis.core import (QgsPointXY,
+from qgis.core import (QgsPointXY, QgsGeometry, QgsSpatialIndex, QgsRectangle,
+                       QgsCoordinateTransform, QgsProject,
                        QgsSingleBandPseudoColorRenderer, QgsRasterShader,
                        QgsColorRampShader)
 from qgis.PyQt.QtGui import QColor
@@ -26,6 +27,53 @@ def sample_raster_at_grid(raster_layer, E_world, N_world):
             Z_world[i, j] = val if (ok and val != no_data) else 0.0
             
     return Z_world
+
+def sample_vector_at_grid(vector_layer, attribute_name, default_value, E_world, N_world, destination_crs=None):
+    """
+    Samples a vector layer at grid nodes.
+    Checks if points fall within polygons and assigns attribute values.
+    """
+    rows, cols = E_world.shape
+    result = np.full((rows, cols), default_value, dtype=np.float32)
+    
+    # Setup CRS transformation if needed
+    source_crs = vector_layer.crs()
+    if destination_crs is None:
+        destination_crs = QgsProject.instance().crs()
+    
+    transform = None
+    if source_crs != destination_crs:
+        transform = QgsCoordinateTransform(source_crs, destination_crs, QgsProject.instance())
+
+    # Cache geometries and attributes for speed
+    geom_map = {}
+    attr_map = {}
+    index = QgsSpatialIndex()
+    
+    for f in vector_layer.getFeatures():
+        geom = f.geometry()
+        if transform:
+            geom.transform(transform)
+        fid = f.id()
+        geom_map[fid] = geom
+        attr_map[fid] = f[attribute_name]
+        index.addFeature(fid, geom.boundingBox())
+
+    for i in range(rows):
+        for j in range(cols):
+            pt = QgsPointXY(E_world[i, j], N_world[i, j])
+            # Quick bounding box check using spatial index
+            candidate_ids = index.intersects(QgsRectangle(pt.x(), pt.y(), pt.x(), pt.y()))
+            for fid in candidate_ids:
+                if geom_map[fid].contains(pt):
+                    val = attr_map[fid]
+                    if val is not None:
+                        try:
+                            result[i, j] = float(val)
+                        except (ValueError, TypeError):
+                            pass
+                    break
+    return result
 
 def create_temp_raster(E, N, Z, crs_wkt):
 

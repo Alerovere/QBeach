@@ -30,7 +30,7 @@
     <item row="0" column="0">
      <widget class="QTabWidget" name="tabQBeach">
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="tabBB">
        <attribute name="title">
@@ -1138,8 +1138,8 @@ p, li { white-space: pre-wrap; }
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>374</width>
-             <height>1026</height>
+             <width>358</width>
+             <height>880</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_15">
@@ -1483,7 +1483,7 @@ p, li { white-space: pre-wrap; }
                  <string>Output variables</string>
                 </property>
                 <property name="collapsed">
-                 <bool>false</bool>
+                 <bool>true</bool>
                 </property>
                 <layout class="QGridLayout" name="gridLayout_12">
                  <item row="0" column="0">

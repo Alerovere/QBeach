@@ -26,7 +26,7 @@ from qgis.core import (QgsRasterLayer, Qgis,
                        QgsMapLayerProxyModel, QgsProject)
 
 from .core.grid import calculate_grid, GridVisualizer
-from .core.raster import sample_raster_at_grid, create_temp_raster, apply_viridis_renderer, HAS_GDAL
+from .core.raster import sample_raster_at_grid, sample_vector_at_grid, create_temp_raster, apply_viridis_renderer, HAS_GDAL
 from .core.export import export_xbeach_model, load_grid_files
 from .core.netcdf import get_netcdf_info, read_netcdf_variable
 
@@ -78,6 +78,7 @@ class QBeachDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.pbResetGrid.clicked.connect(self.resetGrid)
         self.pbResetParams.clicked.connect(self.resetInputParams)
         self.pushButton.clicked.connect(self.exportBathy)
+        self.pbExportOptionalFiles.clicked.connect(self.exportOptionalFiles)
         self.pbDrawGrdDep.clicked.connect(self.plotGrdDep)
         self.pbExportModel.clicked.connect(self.exportModel)
         self.pbPlotVariable.clicked.connect(self.onPlotVariable)
@@ -85,6 +86,8 @@ class QBeachDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.cmboxVariable.currentIndexChanged.connect(self.onVariableChanged)
         self.sliderTimeStep.valueChanged.connect(self.onSliderChanged)
         self.mlcbManningSource.layerChanged.connect(self.onManningLayerChanged)
+        self.mlcbNonErodibleSource.layerChanged.connect(self.onNonErodibleLayerChanged)
+        self.mlcbSedimentSource.layerChanged.connect(self.onSedimentLayerChanged)
         self.cbManningLayer.toggled.connect(self.onManningLayerToggled)
         self.cbNonErodibleLayer.toggled.connect(self.onNonErodibleLayerToggled)
         self.cbSedimentLayer.toggled.connect(self.onSedimentLayerToggled)
@@ -226,11 +229,86 @@ class QBeachDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         except Exception as e:
             QtWidgets.QMessageBox.critical(self, "Error", f"Failed to save files: {str(e)}")
 
+    def exportOptionalFiles(self):
+        output_dir = self.fwSetwdBB2.filePath()
+        path_x = self.qgsfwXgridBB.filePath()
+        path_y = self.qgsfwYgridBB.filePath()
+        path_z = self.qgsfwBedDepBB.filePath()
+
+        if not all([path_x, path_y, path_z]) or not all([os.path.isfile(p) for p in [path_x, path_y, path_z]]):
+            QtWidgets.QMessageBox.warning(self, "Missing Files", "Please select x.grd, y.grd, and bed.dep files to use as a template.")
+            return
+
+        if not output_dir or not os.path.isdir(output_dir):
+            QtWidgets.QMessageBox.warning(self, "Invalid Path", "Please select a valid output directory.")
+            return
+
+        try:
+            E, N, Z = load_grid_files(path_x, path_y, path_z)
+        except Exception as e:
+            QtWidgets.QMessageBox.critical(self, "Error Loading Files", f"Failed to load template grid/depth files: {str(e)}")
+            return
+
+        self.iface.messageBar().pushMessage("QBeach", "Generating optional files...", level=Qgis.Info, duration=2)
+
+        # Manning
+        if self.cbManningLayer.isChecked():
+            layer = self.mlcbManningSource.currentLayer()
+            attribute = self.cbManningHeading.currentText()
+            default_val = self.dsbDefaultManning.value()
+
+            if not layer or not attribute:
+                QtWidgets.QMessageBox.warning(self, "Manning Layer Error", "Please select a valid Manning layer and attribute field.")
+                return
+
+            try:
+                manning_grid = sample_vector_at_grid(layer, attribute, default_val, E, N)
+                np.savetxt(os.path.join(output_dir, "manning.dep"), manning_grid, fmt="%.4f")
+            except Exception as e:
+                QtWidgets.QMessageBox.critical(self, "Manning Error", f"Failed to generate manning.dep: {str(e)}")
+                return
+
+        # Non-Erodible
+        if self.cbNonErodibleLayer.isChecked():
+            layer = self.mlcbNonErodibleSource.currentLayer()
+            attribute = self.cbNonErodibleHeading.currentText()
+            default_val = self.dsbDefaultNE.value()
+
+            if not layer or not attribute:
+                QtWidgets.QMessageBox.warning(self, "Non-Erodible Error", "Please select a valid non-erodible layer and attribute field.")
+                return
+
+            try:
+                ne_grid = sample_vector_at_grid(layer, attribute, default_val, E, N)
+                np.savetxt(os.path.join(output_dir, "nonerodible.dep"), ne_grid, fmt="%.4f")
+            except Exception as e:
+                QtWidgets.QMessageBox.critical(self, "Non-Erodible Error", f"Failed to generate nonerodible.dep: {str(e)}")
+                return
+
+            # (Future: handle Sediment)
+
+
+        #QtWidgets.QMessageBox.information(self, "Success", f"Optional files saved to {output_dir}")
+        QTimer.singleShot(2500, lambda: QtWidgets.QMessageBox.information(
+                self, "Success", f"Optional files saved to {output_dir}"))
+
     def onManningLayerChanged(self, layer):
         self.cbManningHeading.clear()
         if layer and layer.isValid():
             fields = [field.name() for field in layer.fields()]
             self.cbManningHeading.addItems(fields)
+
+    def onNonErodibleLayerChanged(self, layer):
+        self.cbNonErodibleHeading.clear()
+        if layer and layer.isValid():
+            fields = [field.name() for field in layer.fields()]
+            self.cbNonErodibleHeading.addItems(fields)
+
+    def onSedimentLayerChanged(self, layer):
+        self.cbSedimentHeading.clear()
+        if layer and layer.isValid():
+            fields = [field.name() for field in layer.fields()]
+            self.cbSedimentHeading.addItems(fields)
 
     def onManningLayerToggled(self, checked):
         self.mlcbManningSource.setEnabled(checked)
@@ -483,7 +561,7 @@ class QBeachDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             crs = self.iface.mapCanvas().mapSettings().destinationCrs()
             temp_path = create_temp_raster(E, N, Z, crs.toWkt())
             
-            rlayer = QgsRasterLayer(temp_path, "ModelBathyTemp")
+            rlayer = QgsRasterLayer(temp_path, "DepFileTemp")
             if not rlayer.isValid():
                 QtWidgets.QMessageBox.critical(self, "Load Error", "Failed to load the temporary raster layer.")
                 return
